@@ -1,0 +1,36 @@
+```yaml
+image: python:3.7
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DATABASE_URI: "postgresql://user:password@localhost:5432/mydatabase"
+  API_KEYS: "your_api_keys"
+  BLOCKCHAIN_ADDRESS: "your_blockchain_address"
+
+before_script:
+  - pip install -r requirements.txt
+
+build:
+  stage: build
+  script:
+    - python setup.py build
+
+test:
+  stage: test
+  script: 
+    - python -m unittest discover
+
+deploy:
+  stage: deploy
+  script:
+    - python setup.py install
+  environment:
+    name: production
+    url: http://your-production-url.com
+  only:
+    - master
+```

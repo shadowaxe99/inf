@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influenceai-deployment
+  labels:
+    app: influenceai
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: influenceai
+  template:
+    metadata:
+      labels:
+        app: influenceai
+    spec:
+      containers:
+      - name: influenceai-backend
+        image: influenceai/backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: influenceai-secrets
+              key: database_uri
+        - name: API_KEYS
+          valueFrom:
+            secretKeyRef:
+              name: influenceai-secrets
+              key: api_keys
+        - name: BLOCKCHAIN_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              name: influenceai-secrets
+              key: blockchain_address
+      - name: influenceai-frontend
+        image: influenceai/frontend:latest
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influenceai-service
+spec:
+  selector:
+    app: influenceai
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: influenceai-secrets
+type: Opaque
+data:
+  database_uri: <base64-encoded-database-uri>
+  api_keys: <base64-encoded-api-keys>
+  blockchain_address: <base64-encoded-blockchain-address>
